@@ -1,4 +1,4 @@
 config.py
 .pyc
 .json
-file/*
+file/

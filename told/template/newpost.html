@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{#
+  New Announcement Page.
+  Post new announcement.
+#}
+
+
+{% block Body %}
+  <div id="newform"></div>
+  <script type="text/jsx">
+    React.render(<SC.NewPostPage/>, document.getElementById('newform'));
+  </script>
+{% end %}

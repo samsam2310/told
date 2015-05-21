@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{#
+  Announcement Index Page.
+#}
+
+
+{% block Body %}
+  <div id="postlist"></div>
+  <script type="text/jsx">
+    var postlist = [
+      {% for i in posts %}
+        {% raw json_encode(i.to_dict()) %},
+      {% end %}
+    ];
+    React.render(<SC.PostIndexPage postlist={postlist} start={ {{start}} } total={ {{total}} } />, document.getElementById('postlist'));
+  </script>
+{% end %}

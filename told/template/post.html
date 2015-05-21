@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{#
+  Announcement Page.
+#}
+
+
+{% block Body %}
+  <div id="post"></div>
+  <script type="text/jsx">
+    var post = {% raw json_encode(post.to_dict()) %};
+    React.render(<SC.PostPage post={post}/>, document.getElementById('post'));
+  </script>
+{% end %}

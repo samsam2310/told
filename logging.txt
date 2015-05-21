@@ -1,0 +1,102 @@
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:ROLLBACK
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:ROLLBACK
+INFO:sqlalchemy.engine.base.Engine:
+CREATE TABLE posts (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	title CHAR(100) COLLATE utf8_unicode_ci NOT NULL, 
+	content TEXT CHARACTER SET utf8, 
+	created TIMESTAMP NULL, 
+	audio_path TEXT CHARACTER SET utf8 NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:
+CREATE TABLE tempfilelist (
+	`key` CHAR(40) COLLATE utf8_unicode_ci NOT NULL, 
+	filename VARCHAR(100) COLLATE utf8_unicode_ci NOT NULL, 
+	content_type VARCHAR(50) COLLATE utf8_unicode_ci NOT NULL, 
+	created TIMESTAMP NULL, 
+	author_key CHAR(40) COLLATE utf8_unicode_ci NOT NULL, 
+	PRIMARY KEY (`key`)
+)
+
+
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `tempfilelist`
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:DESCRIBE `posts`
+INFO:sqlalchemy.engine.base.Engine:{}
+ERROR:tornado.application:Uncaught exception GET / (127.0.0.1)
+HTTPServerRequest(protocol='http', host='localhost:8000', method='GET', uri='/', version='HTTP/1.1', remote_ip='127.0.0.1', headers={'Connection': 'keep-alive', 'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4', 'Accept-Encoding': 'gzip, deflate, sdch', 'If-None-Match': '"d62f8f76b18eadc83ca8dc680ad04649f5e483ee"', 'Host': 'localhost:8000', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36'})
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1346, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "told/handler/__init__.py", line 85, in get
+    total = self.sql_session.query(Announce.id).count()
+NameError: global name 'Announce' is not defined
+ERROR:tornado.access:500 GET / (127.0.0.1) 1.58ms
+WARNING:tornado.access:404 GET /favicon.ico (127.0.0.1) 0.94ms

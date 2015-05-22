@@ -29,6 +29,9 @@ except NameError:
 
 
 class BaseHandler(tornado.web.RequestHandler):
+    def initialize(self, api=False):
+        self.api = api
+
     def prepare(self):
         """This method is executed at the beginning of each request.
 
@@ -40,16 +43,6 @@ class BaseHandler(tornado.web.RequestHandler):
         and properly close the database.
         """
         self.sql_session.close()
-
-    # def get_current_user(self):
-    #     """Gets the current user logged in from the cookies
-    #     If a valid cookie is retrieved, return a User object.
-    #     Otherwise, return None.
-    #     """
-    #     uid = self.get_secure_cookie('uid')
-    #     if not uid:
-    #         return None
-    #     return User.by_key(uid, self.sql_session).scalar()
 
     def get_template_namespace(self):
         _ = super(BaseHandler, self).get_template_namespace()
@@ -67,15 +60,6 @@ class BaseHandler(tornado.web.RequestHandler):
     def authenticated(method):
         return tornado.web.authenticated(method)
 
-    # @staticmethod
-    # def is_admin_user(method):
-    #     @BaseHandler.authenticated
-    #     def wrapper(self, *args, **kwargs):
-    #         if not self.current_user.admin:
-    #             raise self.HTTPError(403)
-    #         return method(self, *args, **kwargs)
-    #     return wrapper
-
 
 class IndexHandler(BaseHandler):
     def get(self):
@@ -90,13 +74,29 @@ class IndexHandler(BaseHandler):
         q = q.offset(start).limit(10)
         posts = q.all()
 
-        self.render('index.html',posts=posts, total=total, start=start)
+        if self.api:
+            self.write({
+                    'total': total,
+                    'start': start,
+                    'posts': [{
+                            'title': post.title,
+                            'id' : post.id,
+                            'created' : post.created.strftime("%Y-%m-%d %H:%M:%S"),} for post in posts],
+                })
+        else:
+            self.render('index.html',posts=posts, total=total, start=start)
 
 
 class PostHandler(BaseHandler):
     def get(self, id):
         post = Post.by_id(id, self.sql_session).scalar()
-        self.render('post.html', post=post)
+
+        if self.api:
+            self.write({
+                    'post': post.to_dict(),
+                })
+        else:
+            self.render('post.html', post=post)
 
 
 class NewPostHandler(BaseHandler):
@@ -238,4 +238,7 @@ route = [
     (r'/file/(.*)', StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), '../../file')}),
     (r'/fileupload(?:/([a-zA-Z0-9]+))?/?', TempUploadHandler),
     (r'/token/?', TokenHandler),
+
+    (r'/api/?', IndexHandler, {'api':True}),
+    (r'/api/([0-9]+)/?', PostHandler, {'api':True}),
 ]

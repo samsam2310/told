@@ -101,7 +101,9 @@ class PostHandler(BaseHandler):
 
 class NewPostHandler(BaseHandler):
     def get(self):
-        self.render('newpost.html')
+        key = self.get_secure_cookie('token');
+        token = Token.by_key(key, self.sql_session).scalar()
+        self.render('newpost.html', token=token)
 
     def post(self):
         self._ = dict()
@@ -143,7 +145,7 @@ class NewPostHandler(BaseHandler):
             except:
                 return False
 
-        if not self._['title'] or not self._['content']:
+        if not self._['title']:
             return False
 
         return True
@@ -191,7 +193,7 @@ class TempUploadHandler(BaseHandler):
         except:
             os.remove('file/tmp/%s' % self.tmp_file_name)
             if not content_type in audio_content_type:
-                return self.write({'error_msg':'Not a audio file.'})
+                return self.write({'error_msg':'這不是音訊檔。我們只接受mp3、wav格式的音訊檔。'})
             raise self.HTTPError(403)
 
         self.sql_session.commit()

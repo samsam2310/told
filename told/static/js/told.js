@@ -73,7 +73,7 @@ SC.NewPostPage = React.createClass({
   mixins: [React.addons.LinkedStateMixin],
   getInitialState: function() {
     return {
-      step: 1,
+      step: this.props.step,
       check: false,
     };
   },
@@ -82,17 +82,20 @@ SC.NewPostPage = React.createClass({
       this.setState({step: step});
     }.bind(this);
   },
-  audioUploaded: function() {
+  audioUploaded: function(status) {
     this.setState({
-      'audiouploaded':true,
-    })
+      'audiouploaded':status,
+    });
   },
   submit: function(e){
-    if(!this.state.title || !this.state.content){
+    if(!this.state.title){
       e.preventDefault();
+        this.setState({
+        'inputblank':'error',
+      });
     }
   },
-  render: function() {
+  componentDidMount: function() {
     window.verifyCallback = function(response){
       var xhr = new XMLHttpRequest();
       xhr.open('POST','/token',true);
@@ -106,6 +109,8 @@ SC.NewPostPage = React.createClass({
       }.bind(this);
       xhr.send(form);
     }.bind(this);
+  },
+  render: function() {
     return (
       <RB.Grid>
         <RB.PageHeader>新增</RB.PageHeader>
@@ -115,20 +120,26 @@ SC.NewPostPage = React.createClass({
               <RB.Well>
                 <RB.TabbedArea activeKey={this.state.step}>
                   <RB.TabPane eventKey={1}>
-                    <div id='recaptcha'>
-                      <img src='/static/loading.gif' />
-                    </div>
+                    <br/>
+                    <div id='recaptcha'></div>
+                    <RB.Button onClick={this.tabControl(2)}>Debug</RB.Button>
                   </RB.TabPane>
                   <RB.TabPane eventKey={2}>
-                    <SC.AudioUpload callback={this.audioUploaded}/>
-                    <RB.Button disabled={!this.state.audiouploaded} onClick={this.tabControl(3)}>next</RB.Button>
+                    <SC.AudioUpload dropstate={this.state.step===2} callback={this.audioUploaded}/>
+                    <hr/>
+                    <RB.Button onClick={this.tabControl(3)}>Debug</RB.Button>
+                    <div className="btn-group btn-group-justified">
+                      <a className={'btn btn-success'+(!this.state.audiouploaded?' disabled':'')} onClick={this.tabControl(3)}>下一步</a>
+                    </div>
                   </RB.TabPane>
                   <RB.TabPane eventKey={3}>
-                    <RB.Input type='hidden' name="_xsrf" value={_data._xsrf_token} label="公告標題" placeholder='輸入公告標題' />
-                    <RB.Input type='text' name="title" valueLink={this.linkState('title')} label="公告標題" placeholder='輸入公告標題' />
-                    <RB.Input type='textarea' name="content" valueLink={this.linkState('content')} label="公告內容" placeholder='輸入公告內容' />
-                    <RB.Button onClick={this.tabControl(2)}>return</RB.Button>
-                    <RB.Input type='submit'/>
+                    <RB.Input type='hidden' name="_xsrf" value={_data._xsrf_token} />
+                    <RB.Input type='text' bsStyle={this.state.inputblank} htmlFor={this.state.inputblank} name="title" valueLink={this.linkState('title')} className='floating-label' placeholder='標題(必填)' hasFeedback />
+                    <RB.Input type='textarea' name="content" valueLink={this.linkState('content')} className='floating-label' placeholder='內容(可選)' rows="5" />
+                    <div className="btn-group btn-group-justified">
+                      <a className='btn btn-danger' onClick={this.tabControl(2)}>上一步</a>
+                      <a className='btn btn-info' onClick={function(){React.findDOMNode(this.refs.form).submit();}.bind(this)}>送出</a>
+                    </div>
                   </RB.TabPane>
                 </RB.TabbedArea>
               </RB.Well>
@@ -142,6 +153,7 @@ SC.NewPostPage = React.createClass({
 
 
 SC.AudioUpload = React.createClass({
+  mixins: [RB.OverlayMixin],
   getInitialState: function() {
     return {
       audio_key: '',
@@ -149,7 +161,13 @@ SC.AudioUpload = React.createClass({
       filename: '',
     };
   },
-  handleChange: function(evt) {
+  upload: function(file){
+    if(file.size>100000000){
+      this.setState({
+        alert: '檔案過大，檔案大小上限為100MB',
+      });
+      return;
+    }
     if(this.state.audio_key){
       var xhr = new XMLHttpRequest();
       xhr.open('DELETE','/fileupload/'+this.state.audio_key,false);
@@ -157,9 +175,8 @@ SC.AudioUpload = React.createClass({
       form.append('_xsrf',_data._xsrf_token);
       xhr.send(form);
     }
-    var file = evt.target.files[0];
     var form = new FormData();
-    var xhr = new XMLHttpRequest();
+    this.xhr = new XMLHttpRequest();
 
     this.setState({
       filename: file.filename,
@@ -168,30 +185,40 @@ SC.AudioUpload = React.createClass({
 
     form.append('file',file);
     form.append('_xsrf',_data._xsrf_token);
-    xhr.open('POST','/fileupload',true);
-    xhr.onreadystatechange = function(){
-      if(xhr.readyState==4&&xhr.status==200){
-        audiofile = JSON.parse(xhr.responseText);
-        // this.props.newUpload({
-        //   'filename': attfile.file_name,
-        //   'key': attfile.key,
-        // });
-        console.log(audiofile);
-        this.setState({
-          audio_key: audiofile.key,
-          percent: audiofile.key?101:-1,
-        });
-        if(audiofile.key){
-          this.props.callback();
+    this.xhr.open('POST','/fileupload',true);
+    this.xhr.onreadystatechange = function(){
+      if(this.xhr.readyState==4){
+        if(this.xhr.status==200){
+          audiofile = JSON.parse(this.xhr.responseText);
+          console.log(audiofile);
+          this.setState({
+            audio_key: audiofile.key,
+            percent: audiofile.key?101:-1,
+            alert: audiofile.error_msg,
+          });
+          this.props.callback(audiofile.key);
+        }else{
+          this.setState({
+            percent: -1,
+            alert: '發生錯誤，請重新整理網頁',
+          });
+          this.props.callback(false);
         }
       }
     }.bind(this);
-    xhr.upload.onprogress = function(e){
+    this.xhr.upload.onprogress = function(e){
       if(e.lengthComputable){
         this.setState({percent: e.loaded*100 / e.total});
       }
     }.bind(this);
-    xhr.send(form);
+    this.xhr.send(form);
+  },
+  abort: function(){
+    this.xhr.abort();
+    this.setState({
+      percent: -1,
+    });
+    this.props.callback(false);
   },
   audioBar: function(){
     if(this.state.percent>100){
@@ -199,34 +226,105 @@ SC.AudioUpload = React.createClass({
     }
   },
   progressBar: function(){
-    if(this.state.percent>100){
+    if(this.state.percent>100||this.state.percent<0){
+      var uploadButton = {
+        overflow:'hidden',
+        position: 'relative',
+        width: '100%',
+      };
+      var uploadInput = {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+        opacity: 0,
+      };
+      var uploadIcon = {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 0,
+      };
       return (
-        <i className="mdi-content-add">
-          <RB.Input type='file' label='File' help='GG' onChange={this.handleChange}/>
-        </i>
-      );
-    }else if(this.state.percent<0){
-      return (
-        <div ClassName="icon-preview" style={{overflow:'hidden'}}>
-          <i className="mdi-content-add">
-            <RB.Input style={{opacity:0}} type='file' onChange={this.handleChange}/>
-          </i>
+        <div className='btn btn-default btn-lg btn-material-grey-300 mdi-content-add' style={uploadButton}>
+          <input ref='inputFile' style={uploadInput} type='file' onChange={function(e){this.upload(e.target.files[0]);}.bind(this)}/>
         </div>
       );
     }else{
       return (
-        <RB.ProgressBar active now={this.state.percent} label='%(percent)s%'/>
+        <div>
+          <RB.ProgressBar active now={this.state.percent} label='%(percent)s%'/>
+          <RB.Button bsStyle='danger' onClick={this.abort}>取消</RB.Button>
+        </div>
       );
     }
+  },
+  alert: function(){
+    if(this.state.alert){
+      return (
+        <Alert bsStyle='danger' onDismiss={function(){this.setState({alert:''});}.bind(this)}>
+          <h4>錯誤！</h4>
+          <p>{this.state.alert}</p>
+        </Alert>
+      );
+    }
+  },
+  componentWillMount: function() {
+    window.ondragover = function(e){
+      e.stopPropagation();
+      e.preventDefault();
+      if(!this.props.dropstate||this.state.percent>=0&&this.state.percent<=100)return;
+      this.setState({drop:true});
+    }.bind(this);
+    window.ondragleave = function(e){
+      e.stopPropagation();
+      e.preventDefault();
+      if(!this.props.dropstate||this.state.percent>=0&&this.state.percent<=100)return;
+      this.setState({drop:false});
+    }.bind(this);
+    window.ondragend = function(e){
+      e.stopPropagation();
+      e.preventDefault();
+      if(!this.props.dropstate||this.state.percent>=0&&this.state.percent<=100)return;
+      this.setState({drop:false});
+    }.bind(this);
+    window.ondrop = function(e){
+      e.stopPropagation();
+      e.preventDefault();
+      if(!this.props.dropstate||this.state.percent>=0&&this.state.percent<=100)return;
+      this.setState({drop:false});
+      var files = e.dataTransfer.files;
+      if(files.length>0){
+        this.upload(files[0])
+      }
+    }.bind(this);
   },
   render: function() {
     return (
       <div>
         <RB.Input type='hidden' name="audio_key" value={this.state.audio_key}/>
+        <h4>上傳聲音檔</h4>
+        <p className="text-muted">點選按鈕或是拖曳檔案</p>
+        {this.alert()}
         {this.audioBar()}
         {this.progressBar()}
       </div>
     );
+  },
+  renderOverlay: function() {
+    if(this.state.drop){
+      return (
+        <RB.Modal onRequestHide={function(){return false;}}>
+          <div className='modal-body well-info'>
+            <Alert bsStyle='info'>
+              <h2>上傳音訊檔案</h2>
+            </Alert>
+          </div>
+        </RB.Modal>
+      );
+    }else{
+      return <span/>;
+    }
   }
 });
 

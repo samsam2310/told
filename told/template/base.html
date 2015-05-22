@@ -10,7 +10,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="{{ static_url('bootstrap-3.3.4-dist/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.3.0/css/material-fullpalette.min.css">
-    <script src='https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit' async defer></script>
   </head>
   <body>
     <div id="navbar"></div>
@@ -20,12 +19,8 @@
         current_user: {% raw current_user.to_dict_str() if current_user else 'false' %},
         _xsrf_token: '{{_xsrf_token}}',
       };
-      var onloadCallback = function() {
-        document.getElementById('recaptcha').innerHTML = '';
-        grecaptcha.render('recaptcha', {
-          'sitekey' : '6LdjLwcTAAAAAJcCnj5jvV36EtOjdEb1LZ4_2uwv',
-          'callback' : window.verifyCallback
-        });
+      window.onload = function(){
+        $.material.init();
       };
     </script>
     <script type="text/jsx" src="{{ static_url('js/told.js') }}"></script>
@@ -44,8 +39,5 @@
     <script src="{{ static_url('js/react-0.13.2/JSXTransformer.js') }}"></script>
     <script src="{{ static_url('js/marked.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.3.0/js/material.min.js"></script>
-    <script>
-      $.material.init();
-    </script>
   </body>
 </html>

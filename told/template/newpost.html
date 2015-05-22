@@ -8,7 +8,22 @@
 
 {% block Body %}
   <div id="newform"></div>
+  <style>
+    .modal-container {
+      position: relative;
+    }
+    .modal-container .modal, .modal-container .modal-backdrop {
+      position: absolute;
+    }
+  </style>
+  <script src='https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit' async defer></script>
   <script type="text/jsx">
-    React.render(<SC.NewPostPage/>, document.getElementById('newform'));
+    var onloadCallback = function() {
+      grecaptcha.render('recaptcha', {
+        'sitekey' : '6LdjLwcTAAAAAJcCnj5jvV36EtOjdEb1LZ4_2uwv',
+        'callback' : window.verifyCallback
+      });
+    };
+    React.render(<SC.NewPostPage step={ {{2 if token else 1}} }/>, document.getElementById('newform'));
   </script>
 {% end %}

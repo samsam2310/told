@@ -183,9 +183,6 @@ class TempUploadHandler(BaseHandler):
                 f.write(body)
 
             content_type = subprocess.check_output('file -b --mime-type file/tmp/%s' % self.tmp_file_name, shell=True)
-            print(content_type)
-            # print(audio_content_type)
-            # print(content_type in audio_content_type)
             assert content_type in audio_content_type
 
             new_file = TempFileList(self.tmp_file_name, filename, content_type)

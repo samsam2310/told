@@ -75,6 +75,7 @@ SC.NewPostPage = React.createClass({
     return {
       step: this.props.step,
       check: false,
+      content: '',
     };
   },
   tabControl: function(step){
@@ -87,13 +88,22 @@ SC.NewPostPage = React.createClass({
       'audiouploaded':status,
     });
   },
-  submit: function(e){
+  submit: function(){
     if(!this.state.title){
-      e.preventDefault();
         this.setState({
         'inputblank':'error',
       });
+    }else{
+      React.findDOMNode(this.refs.form).submit();
     }
+  },
+  textareaResize: function(){
+    this.setState({
+      'content': this.refs.textarea.getValue(),
+    });
+    var textarea = document.getElementById('textarea');
+    textarea.style.height = '0px'
+    textarea.style.height = textarea.scrollHeight+20 + 'px';
   },
   componentDidMount: function() {
     window.verifyCallback = function(response){
@@ -114,14 +124,16 @@ SC.NewPostPage = React.createClass({
     return (
       <RB.Grid>
         <RB.PageHeader>新增</RB.PageHeader>
-        <form action='/new' method='POST' onSubmit={this.submit} ref='form' >
+        <form action='/new' method='POST' onSubmit={function(e){e.preventDefault();this.submit();}.bind(this)} ref='form' >
           <RB.Row>
             <RB.Col xs={12} md={12}>
               <RB.Well>
                 <RB.TabbedArea activeKey={this.state.step}>
                   <RB.TabPane eventKey={1}>
                     <br/>
-                    <div id='recaptcha'></div>
+                    <div id='recaptcha'>
+                      <img src='/static/loading.gif' />
+                    </div>
                     <RB.Button onClick={this.tabControl(2)}>Debug</RB.Button>
                   </RB.TabPane>
                   <RB.TabPane eventKey={2}>
@@ -134,11 +146,20 @@ SC.NewPostPage = React.createClass({
                   </RB.TabPane>
                   <RB.TabPane eventKey={3}>
                     <RB.Input type='hidden' name="_xsrf" value={_data._xsrf_token} />
+                    <h3>標題</h3><hr/>
                     <RB.Input type='text' bsStyle={this.state.inputblank} htmlFor={this.state.inputblank} name="title" valueLink={this.linkState('title')} className='floating-label' placeholder='標題(必填)' hasFeedback />
-                    <RB.Input type='textarea' name="content" valueLink={this.linkState('content')} className='floating-label' placeholder='內容(可選)' rows="5" />
+                    <RB.Row>
+                      <RB.Col xs={12} md={12}><h3>內容</h3><hr/></RB.Col>
+                      <RB.Col xs={12} md={6}>
+                        <RB.Input id='textarea' type='textarea' name="content" ref='textarea' onChange={this.textareaResize} className='floating-label' placeholder='內容(可選)' />
+                      </RB.Col>
+                      <RB.Col xs={12} md={6}>
+                        <span dangerouslySetInnerHTML={{__html: marked(this.state.content, {sanitize: true,breaks:true})}} />
+                      </RB.Col>
+                    </RB.Row>
                     <div className="btn-group btn-group-justified">
                       <a className='btn btn-danger' onClick={this.tabControl(2)}>上一步</a>
-                      <a className='btn btn-info' onClick={function(){React.findDOMNode(this.refs.form).submit();}.bind(this)}>送出</a>
+                      <a className='btn btn-info' onClick={this.submit}>送出</a>
                     </div>
                   </RB.TabPane>
                 </RB.TabbedArea>
@@ -340,7 +361,7 @@ SC.PostPage = React.createClass({
             <RB.Well>
               {this.props.post.title}
               <hr/>
-              {this.props.post.content}
+              <span dangerouslySetInnerHTML={{__html: marked(this.props.post.content, {sanitize: true,breaks:true})}} />
               <br/>
               <audio controls><source src={'/file/'+this.props.post.audio_path}/></audio>
             </RB.Well>

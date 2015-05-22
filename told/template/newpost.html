@@ -16,9 +16,9 @@
       position: absolute;
     }
   </style>
-  <script src='https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit' async defer></script>
   <script type="text/jsx">
     var onloadCallback = function() {
+      document.getElementById('recaptcha').innerHTML = ''
       grecaptcha.render('recaptcha', {
         'sitekey' : '6LdjLwcTAAAAAJcCnj5jvV36EtOjdEb1LZ4_2uwv',
         'callback' : window.verifyCallback
@@ -26,4 +26,5 @@
     };
     React.render(<SC.NewPostPage step={ {{2 if token else 1}} }/>, document.getElementById('newform'));
   </script>
+  <script src='https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit' async defer></script>
 {% end %}

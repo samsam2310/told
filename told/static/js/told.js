@@ -169,6 +169,7 @@ SC.AudioUpload = React.createClass({
       return;
     }
     if(this.state.audio_key){
+      this.props.callback(false);
       var xhr = new XMLHttpRequest();
       xhr.open('DELETE','/fileupload/'+this.state.audio_key,false);
       var form = new FormData();
